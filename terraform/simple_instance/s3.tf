@@ -3,7 +3,6 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "docking_bay" {
-  bucket_prefix = "docking-bay-storage-"
 
   tags = {
     Name                 = "Docking Bay"
@@ -17,12 +16,18 @@ resource "aws_s3_bucket" "docking_bay" {
     git_repo             = "terragoat"
     yor_trace            = "ea3e6629-46c2-44d5-a468-706d9fda1e4a"
   }
+  bucket         = "docking-bay-storage-20220210160425264800000001"
+  hosted_zone_id = "Z3BJ6K6RIION7M"
+  request_payer  = "BucketOwner"
+  versioning     = { "enabled" : false, "mfa_delete" : false }
 }
+
 
 resource "aws_security_group" "ssh_traffic" {
   name        = "ssh_traffic"
   description = "Allow SSH inbound traffic"
   ingress {
+    self        = false
     description = "SSH"
     from_port   = 22
     to_port     = 22
@@ -39,7 +44,9 @@ resource "aws_security_group" "ssh_traffic" {
     git_repo             = "terragoat"
     yor_trace            = "e2377010-18df-4c38-bcbe-cac0fc845785"
   }
+  vpc_id = "vpc-01853c662e11abdfd"
 }
+
 
 resource "aws_instance" "web_server_instance" {
   ami             = data.aws_ami.ubuntu.id
@@ -56,7 +63,26 @@ resource "aws_instance" "web_server_instance" {
     git_repo             = "terragoat"
     yor_trace            = "b2f46dca-cbf5-46af-828e-46142f4b9e8e"
   }
+  associate_public_ip_address = true
+  availability_zone           = "us-west-2c"
+  cpu_core_count              = 1
+  cpu_threads_per_core        = 1
+  credit_specification        = { "cpu_credits" : "standard" }
+  disable_api_termination     = false
+  ebs_optimized               = false
+  get_password_data           = false
+  hibernation                 = false
+  ipv6_address_count          = 0
+  metadata_options            = { "http_endpoint" : "enabled", "http_put_response_hop_limit" : "1", "http_tokens" : "optional" }
+  monitoring                  = false
+  private_ip                  = "172.31.15.195"
+  root_block_device           = { "delete_on_termination" : true, "encrypted" : false, "iops" : "100", "volume_size" : "8", "volume_type" : "gp2" }
+  source_dest_check           = true
+  subnet_id                   = "subnet-0a6bd1860c3c4e446"
+  tenancy                     = "default"
+  vpc_security_group_ids      = ["sg-09d994108230f0ad5"]
 }
+
 
 data "aws_ami" "ubuntu" {
   most_recent = true
